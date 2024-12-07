@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  nats-server:
+    image: nats:latest
+    container_name: nats-server
+    ports:
+      - "4222:4222"
+    command: "-js" # Enable JetStream for optional message persistence
+    volumes:
+      - faas_data:/tmp/nats/jetstream
+
+volumes:
+  faas_data:
