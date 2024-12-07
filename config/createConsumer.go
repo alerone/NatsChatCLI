@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/nats-io/nats.go/jetstream"
@@ -14,20 +15,28 @@ func CreateConsumer() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	consumer, err := ChatStream.CreateOrUpdateConsumer(ctx, jetstream.ConsumerConfig{
-		Name:          ClientConn.Name,
-		Durable:       ClientConn.Name,
-		AckPolicy:     jetstream.AckExplicitPolicy,
-		FilterSubject: fmt.Sprintf("chats.%s", ClientConn.Channel),
-		DeliverPolicy: jetstream.DeliverAllPolicy,
-	})
+	channelName := strings.ReplaceAll(ClientConn.Channel, ".", "_")
+
+	consumerName := fmt.Sprintf("%s_%s", channelName, ClientConn.Name)
+
+	_, err := ChatStream.Consumer(ctx, consumerName)
 	if err != nil {
-		return err
+		if err == jetstream.ErrConsumerNotFound {
+			consumer, err := ChatStream.CreateConsumer(ctx, jetstream.ConsumerConfig{
+				Name:          consumerName,
+				Durable:       consumerName,
+				AckPolicy:     jetstream.AckExplicitPolicy,
+				FilterSubject: fmt.Sprintf("chats.%s", ClientConn.Channel),
+				DeliverPolicy: jetstream.DeliverAllPolicy,
+			})
+			if err != nil {
+				return err
+			}
+			Consumer = consumer
+			return nil
+		}
 	}
-
-	Consumer = consumer
-
-	return nil
+	return fmt.Errorf("user %s already exists in channel %s", ClientConn.Name, ClientConn.Channel)
 }
 
 func DeleteConsumer() {

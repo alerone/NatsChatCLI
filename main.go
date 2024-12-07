@@ -33,7 +33,7 @@ func init() {
 
 	err = config.CreateConsumer()
 	if err != nil {
-		log.Fatalf("Error creating to Jetstream consumer: %v", err)
+		log.Fatalf("Error creating user consumer: %v", err)
 	}
 }
 
@@ -50,6 +50,7 @@ func main() {
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
+
 		text := scanner.Text()
 		if text == "" {
 			continue
