@@ -14,7 +14,7 @@ import (
 func init() {
 	err := config.GetClientArgs()
 	if err != nil {
-		log.Fatal("Usage: chat-cli <NATS_SERVER> <CHANNEL> <YOUR_NAME>")
+		log.Fatal("Usage: ./natsChat <NATS_SERVER> <CHANNEL> <YOUR_NAME>")
 	}
 	err = config.ConnectToNats()
 
